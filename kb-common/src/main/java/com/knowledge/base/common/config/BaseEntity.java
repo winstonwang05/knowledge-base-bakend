@@ -1,6 +1,8 @@
 package com.knowledge.base.common.config;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.knowledge.base.common.utils.SnowflakeIdGenerator;
+import lombok.Data;
 import nonapi.io.github.classgraph.utils.LogNode;
 
 import java.io.Serializable;
@@ -29,6 +31,7 @@ import java.time.LocalDateTime;
  * @date: 2026/9/18 9:42
  * @version: 1.0
  */
+@Data
 public abstract class BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -71,9 +74,9 @@ public abstract class BaseEntity implements Serializable {
     /**
      * 插入前自动填充ID
      */
-/*    public void preInsert() {
+    public void preInsert() {
         if (this.id == null) {
             this.id = SnowflakeIdGenerator.getInstance().nextId();
         }
-    }*/
+    }
 }
