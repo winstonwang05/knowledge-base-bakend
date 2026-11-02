@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.knowledge.base.document.mapper.CommentMapper">
+
+    <!-- 增加点赞数 -->
+    <update id="incrementLikeCount">
+        UPDATE tb_comment
+        SET like_count = like_count + 1
+        WHERE id = #{commentId}
+        AND deleted = 0
+    </update>
+
+    <!-- 减少点赞数（下限为0，避免计数变负） -->
+    <update id="decrementLikeCount">
+        UPDATE tb_comment
+        SET like_count = GREATEST(like_count - 1, 0)
+        WHERE id = #{commentId}
+        AND deleted = 0
+    </update>
+
+    <!-- 增加回复数（作用于根评论） -->
+    <update id="incrementReplyCount">
+        UPDATE tb_comment
+        SET reply_count = reply_count + 1
+        WHERE id = #{commentId}
+        AND deleted = 0
+    </update>
+
+    <!-- 减少回复数（下限为0，避免计数变负） -->
+    <update id="decrementReplyCount">
+        UPDATE tb_comment
+        SET reply_count = GREATEST(reply_count - 1, 0)
+        WHERE id = #{commentId}
+        AND deleted = 0
+    </update>
+
+</mapper>
