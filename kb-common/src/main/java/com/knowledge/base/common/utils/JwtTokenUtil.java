@@ -61,12 +61,47 @@ public class JwtTokenUtil {
     }
 
     /**
+     * 生成访问Token（指定过期时间，携带会话ID）
+     *
+     * @param userId 用户ID
+     * @param username 用户名
+     * @param avatar 头像URL
+     * @param expirationSeconds 过期时间（秒）
+     * @param sessionId 会话ID
+     * @return Token
+     */
+    public String generateAccessToken(Long userId, String username, String avatar, Long expirationSeconds, String sessionId) {
+        return generateToken(userId, username, avatar, expirationSeconds * 1000, sessionId);
+    }
+
+    /**
      * 生成刷新token
      * @param userId 用户id
      * @return 返回刷新Token
      */
     public String generateRefreshToken(Long userId) {
         return generateToken(userId, null, null, jwtConfig.getRefreshExpiration() * 1000);
+    }
+
+    /**
+     * 生成刷新token（携带会话ID）
+     * @param userId 用户id
+     * @param sessionId 会话ID
+     * @return 返回刷新Token
+     */
+    public String generateRefreshToken(Long userId, String sessionId) {
+        return generateToken(userId, null, null, jwtConfig.getRefreshExpiration() * 1000, sessionId);
+    }
+
+    /**
+     * 从Claims中获取会话ID
+     *
+     * @param claims Token载荷
+     * @return 会话ID，无则返回null
+     */
+    public String getSessionId(Claims claims) {
+        Object sessionId = claims.get("sessionId");
+        return sessionId != null ? sessionId.toString() : null;
     }
 
     /**
@@ -79,6 +114,19 @@ public class JwtTokenUtil {
      * Token中包含用户信息
      */
     public String generateToken(Long userId, String username, String avatar, Long expiration) {
+        return generateToken(userId, username, avatar, expiration, null);
+    }
+
+    /**
+     * 创建Token（携带会话ID）
+     * @param userId 用户id
+     * @param username 用户名
+     * @param avatar 用户头像信息
+     * @param expiration 过期时间
+     * @param sessionId 会话ID
+     * @return 返回Token
+     */
+    public String generateToken(Long userId, String username, String avatar, Long expiration, String sessionId) {
         // 1.前置准备
         Date date = new Date();
         Date expiryDate = new Date(date.getTime() + expiration);
@@ -90,6 +138,9 @@ public class JwtTokenUtil {
         }
         if (avatar != null) {
             claims.put("avatar", avatar);
+        }
+        if (sessionId != null) {
+            claims.put("sessionId", sessionId);
         }
         // 2.创建Token并返回
         return Jwts.builder()
