@@ -1,5 +1,6 @@
 package com.knowledge.base.document.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.knowledge.base.common.exception.BusinessException;
@@ -10,6 +11,7 @@ import com.knowledge.base.document.entity.Category;
 import com.knowledge.base.document.entity.Document;
 import com.knowledge.base.document.mapper.CategoryMapper;
 import com.knowledge.base.document.mapper.DocumentMapper;
+import com.knowledge.base.document.service.DocumentContentService;
 import com.knowledge.base.document.service.DocumentService;
 import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -33,13 +36,11 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class DocumentServiceImpl extends ServiceImpl<DocumentMapper, Document> implements DocumentService {
 
-
-
-    @Resource
     private final DocumentMapper documentMapper;
 
-    @Resource
     private final CategoryMapper categoryMapper;
+
+    private final DocumentContentService documentContentService;
 
 
     /**
@@ -123,7 +124,28 @@ public class DocumentServiceImpl extends ServiceImpl<DocumentMapper, Document> i
         if (count <= 0) {
             throw new BusinessException("创建文档失败");
         }
-        // TODO，内容插入MongoDB
+        // 同步保存内容到MongoDB
+        boolean hasContent = StrUtil.isNotBlank(documentDTO.getContent());
+        if (hasContent) {
+            try {
+                String contentId = documentContentService.saveContent(document.getId(), documentDTO.getContent());
+                // 计算内容长度（字符数）和文件大小（UTF-8字节数）
+                String content = documentDTO.getContent();
+                int contentLength = content.length();
+                long fileSize = content.getBytes(StandardCharsets.UTF_8).length;
+                // 更新MySQL记录的contentId、contentLength、fileSize
+                Document doc = new Document();
+                doc.setId(document.getId());
+                doc.setContentId(contentId);
+                doc.setContentLength(contentLength);
+                doc.setFileSize(fileSize);
+                documentMapper.updateById(doc);
+                log.info("文档内容保存成功：documentId={}, contentId={}, contentLength={}, fileSize={}", document.getId(), contentId, contentLength, fileSize);
+            } catch (Exception e) {
+                log.error("保存文档内容到MongoDB失败：documentId={}, error={}", document.getId(), e.getMessage());
+                throw new BusinessException("保存文档内容失败：" + e.getMessage());
+            }
+        }
     }
 
     @Override
