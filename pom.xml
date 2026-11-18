@@ -52,6 +52,7 @@
         <module>kb-foundation</module>
         <module>kb-graph</module>
         <module>kb-statistics</module>
+        <module>kb-ai</module>
     </modules>
 
     <dependencyManagement>
