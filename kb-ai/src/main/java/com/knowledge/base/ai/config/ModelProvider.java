@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -124,6 +125,7 @@ public class ModelProvider {
                         .modelName(qwenModel)
                         .maxTokens(qwenMaxTokens)
                         .temperature(qwenTemperature)
+                        .timeout(Duration.ofSeconds(120))
                         .build();
             case "deepseek":
                 return OpenAiChatModel.builder()
@@ -132,6 +134,7 @@ public class ModelProvider {
                         .modelName(deepseekModel)
                         .maxTokens(deepseekMaxTokens)
                         .temperature(deepseekTemperature)
+                        .timeout(Duration.ofSeconds(120))
                         .build();
             default:
                 throw new IllegalStateException("未知模型：" + modelName);
@@ -150,6 +153,7 @@ public class ModelProvider {
                         .modelName(qwenModel)
                         .maxTokens(qwenMaxTokens)
                         .temperature(qwenTemperature)
+                        .timeout(Duration.ofSeconds(120))
                         .build();
             case "deepseek":
                 return OpenAiStreamingChatModel.builder()
@@ -158,6 +162,7 @@ public class ModelProvider {
                         .modelName(deepseekModel)
                         .maxTokens(deepseekMaxTokens)
                         .temperature(deepseekTemperature)
+                        .timeout(Duration.ofSeconds(120))
                         .build();
             default:
                 throw new IllegalStateException("未知模型：" + modelName);
